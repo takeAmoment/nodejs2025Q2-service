@@ -5,12 +5,16 @@ import { CreateArtistDto } from './dto/createArtist.dto';
 import { ErorrMessagesEnum } from 'src/constants';
 import { UpdateArtistDto } from './dto/updateArtist.dto';
 import { TrackService } from 'src/track/track.service';
+import { AlbumService } from 'src/albums/album.service';
 
 @Injectable()
 export class ArtistService {
   private readonly artists: Artist[] = [];
 
-  constructor(private readonly trackService: TrackService) {}
+  constructor(
+    private readonly trackService: TrackService,
+    private readonly albumService: AlbumService,
+  ) {}
 
   findAll(): Artist[] {
     return this.artists;
@@ -67,6 +71,7 @@ export class ArtistService {
     }
 
     this.trackService.setArtistToNull(artist.id);
+    this.albumService.setArtistToNull(artist.id);
 
     this.artists.splice(artistId, 1);
   }

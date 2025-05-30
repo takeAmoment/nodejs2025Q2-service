@@ -45,7 +45,7 @@ export class TrackService {
 
     const trackId = this.tracks.findIndex((item) => item.id === id);
     if (trackId === -1) {
-      throw new NotFoundException(trackId);
+      throw new NotFoundException(ErorrMessagesEnum.TRACK_NOT_FOUND);
     }
 
     const track = this.tracks[trackId];
@@ -73,10 +73,17 @@ export class TrackService {
   }
 
   setArtistToNull(artistId: string) {
-    console.log(this.tracks);
     this.tracks.forEach((track) => {
       if (track.artistId === artistId) {
         track.artistId = null;
+      }
+    });
+  }
+
+  setAlbumToNull(albumId: string) {
+    this.tracks.forEach((item) => {
+      if (item.albumId === albumId) {
+        item.albumId = null;
       }
     });
   }

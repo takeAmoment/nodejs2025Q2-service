@@ -2,6 +2,7 @@ export enum RoutingPathsEnum {
   USER = 'user',
   TRACK = 'track',
   ARTIST = 'artist',
+  ALBUM = 'album',
 }
 
 export enum ErorrMessagesEnum {
@@ -11,4 +12,5 @@ export enum ErorrMessagesEnum {
   USER_EXIST = 'User with with login already exists.',
   TRACK_NOT_FOUND = 'Such track does not exist.',
   ARTIST_NOT_EXIST = 'Such artist does not exist.',
+  ALBUM_NOT_EXIST = 'Such album does not exist.',
 }
