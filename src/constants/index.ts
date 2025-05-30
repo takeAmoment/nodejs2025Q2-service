@@ -1,6 +1,7 @@
 export enum RoutingPathsEnum {
   USER = 'user',
   TRACK = 'track',
+  ARTIST = 'artist',
 }
 
 export enum ErorrMessagesEnum {
@@ -9,4 +10,5 @@ export enum ErorrMessagesEnum {
   INCORECT_UUDI_FORMAT = 'Invalid UUDI format.',
   USER_EXIST = 'User with with login already exists.',
   TRACK_NOT_FOUND = 'Such track does not exist.',
+  ARTIST_NOT_EXIST = 'Such artist does not exist.',
 }

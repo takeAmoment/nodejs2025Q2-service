@@ -36,6 +36,7 @@ export class TrackService {
     };
 
     this.tracks.push(track);
+    console.log(this.tracks);
     return track;
   }
 
@@ -65,9 +66,18 @@ export class TrackService {
   delete(id: string) {
     const trackId = this.tracks.findIndex((item) => item.id === id);
     if (trackId === -1) {
-      throw new NotFoundException(trackId);
+      throw new NotFoundException(ErorrMessagesEnum.TRACK_NOT_FOUND);
     }
 
     this.tracks.splice(trackId, 1);
+  }
+
+  setArtistToNull(artistId: string) {
+    console.log(this.tracks);
+    this.tracks.forEach((track) => {
+      if (track.artistId === artistId) {
+        track.artistId = null;
+      }
+    });
   }
 }
