@@ -3,6 +3,7 @@ export enum RoutingPathsEnum {
   TRACK = 'track',
   ARTIST = 'artist',
   ALBUM = 'album',
+  FAVS = 'favs',
 }
 
 export enum ErorrMessagesEnum {
@@ -13,4 +14,6 @@ export enum ErorrMessagesEnum {
   TRACK_NOT_FOUND = 'Such track does not exist.',
   ARTIST_NOT_EXIST = 'Such artist does not exist.',
   ALBUM_NOT_EXIST = 'Such album does not exist.',
+  ALBUM_NOT_IN_FAVS = 'This album is not in favorites.',
+  ARTIST_NOT_IN_FAVS = 'This artist is not in favorites.',
 }
