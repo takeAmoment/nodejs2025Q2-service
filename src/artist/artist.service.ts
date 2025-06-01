@@ -4,20 +4,23 @@ import { Artist } from './atrist.interface';
 import { CreateArtistDto } from './dto/createArtist.dto';
 import { ErorrMessagesEnum } from 'src/constants';
 import { UpdateArtistDto } from './dto/updateArtist.dto';
-import { TrackService } from 'src/track/track.service';
-import { AlbumService } from 'src/albums/album.service';
 
 @Injectable()
 export class ArtistService {
   private readonly artists: Artist[] = [];
 
-  constructor(
-    private readonly trackService: TrackService,
-    private readonly albumService: AlbumService,
-  ) {}
+  // constructor(
+  //   private readonly trackService: TrackService,
+  //   private readonly albumService: AlbumService,
+  //   private readonly favoritesService: FavoritesService,
+  // ) {}
 
   findAll(): Artist[] {
     return this.artists;
+  }
+
+  findAllByIds(ids: string[]): Artist[] {
+    return this.artists.filter((artist) => ids.includes(artist.id));
   }
 
   findById(id: string): Artist {
@@ -64,15 +67,18 @@ export class ArtistService {
   }
 
   delete(id: string) {
-    const artistId = this.artists.findIndex((item) => item.id === id);
-    const artist = this.artists[artistId];
-    if (artistId === -1) {
+    const artistIndex = this.artists.findIndex((item) => item.id === id);
+    if (artistIndex === -1) {
       throw new NotFoundException(ErorrMessagesEnum.ARTIST_NOT_EXIST);
     }
 
-    this.trackService.setArtistToNull(artist.id);
-    this.albumService.setArtistToNull(artist.id);
+    // this.trackService.setArtistToNull(artist.id);
+    // this.albumService.setArtistToNull(artist.id);
 
-    this.artists.splice(artistId, 1);
+    // const isExistInFavs =
+    //   this.favoritesService.checkIsAlbumExistInFavorites(id);
+    // if (isExistInFavs) this.favoritesService.deleteAlbumFromFavorites(id);
+
+    this.artists.splice(artistIndex, 1);
   }
 }

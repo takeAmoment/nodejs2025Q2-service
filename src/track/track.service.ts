@@ -9,8 +9,14 @@ import { UpdateTrackDto } from './dto/updateTrack.dto';
 export class TrackService {
   private readonly tracks: Track[] = [];
 
+  // constructor(private readonly favoritesService: FavoritesService) {}
+
   findAll(): Track[] {
     return this.tracks;
+  }
+
+  findAllByIds(ids: string[]): Track[] {
+    return this.tracks.filter((track) => ids.includes(track.id));
   }
 
   findById(id: string) {
@@ -70,6 +76,9 @@ export class TrackService {
     }
 
     this.tracks.splice(trackId, 1);
+    // const isExistInFavs =
+    //   this.favoritesService.checkIsTrackExistInFavorites(id);
+    // if (isExistInFavs) this.favoritesService.deleteTrackFromFavorites(id);
   }
 
   setArtistToNull(artistId: string) {

@@ -13,10 +13,14 @@ import { AlbumService } from './album.service';
 import { ParseUUDIPipe } from 'src/shared/pipes/parse-uudi.pipe';
 import { CreateAlbumDto } from './dto/createAlbum.dto';
 import { UpdateAlbumDto } from './dto/updateAlbum.dto';
+import { MusicLibService } from 'src/music-lib/music-lib.service';
 
 @Controller(RoutingPathsEnum.ALBUM)
 export class AlbumController {
-  constructor(private readonly albumService: AlbumService) {}
+  constructor(
+    private readonly albumService: AlbumService,
+    private readonly musicLibService: MusicLibService,
+  ) {}
 
   @Get()
   findAll() {
@@ -41,6 +45,7 @@ export class AlbumController {
   @Delete(':id')
   @HttpCode(204)
   delete(@Param('id', ParseUUDIPipe) id: string) {
-    return this.albumService.delete(id);
+    // return this.albumService.delete(id);
+    return this.musicLibService.deleteAlbum(id);
   }
 }

@@ -4,16 +4,17 @@ import { randomUUID } from 'crypto';
 import { ErorrMessagesEnum } from 'src/constants';
 import { CreateAlbumDto } from './dto/createAlbum.dto';
 import { UpdateAlbumDto } from './dto/updateAlbum.dto';
-import { TrackService } from 'src/track/track.service';
 
 @Injectable()
 export class AlbumService {
   private readonly albums: Album[] = [];
 
-  constructor(private readonly trackService: TrackService) {}
-
   findAll(): Album[] {
     return this.albums;
+  }
+
+  findAllByIds(ids: string[]): Album[] {
+    return this.albums.filter((album) => ids.includes(album.id));
   }
 
   findById(id: string): Album {
@@ -69,7 +70,12 @@ export class AlbumService {
       throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
     }
 
-    this.trackService.setAlbumToNull(id);
+    // this.trackService.setAlbumToNull(id);
+    // const isExistInFavs =
+    //   this.favoritesService.checkIsAlbumExistInFavorites(id);
+    // if (isExistInFavs) {
+    //   this.favoritesService.deleteAlbumFromFavorites(id);
+    // }
 
     this.albums.splice(albumId, 1);
   }
