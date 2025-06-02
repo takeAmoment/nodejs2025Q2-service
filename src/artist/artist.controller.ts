@@ -46,7 +46,6 @@ export class ArtistController {
   @Delete(':id')
   @HttpCode(204)
   delete(@Param('id', ParseUUDIPipe) id: string) {
-    // return this.artistService.delete(id);
     return this.musicLibService.deleteArtist(id);
   }
 }

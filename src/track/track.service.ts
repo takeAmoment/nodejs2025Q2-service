@@ -73,9 +73,6 @@ export class TrackService {
     }
 
     this.tracks.splice(trackId, 1);
-    // const isExistInFavs =
-    //   this.favoritesService.checkIsTrackExistInFavorites(id);
-    // if (isExistInFavs) this.favoritesService.deleteTrackFromFavorites(id);
   }
 
   setArtistToNull(artistId: string) {

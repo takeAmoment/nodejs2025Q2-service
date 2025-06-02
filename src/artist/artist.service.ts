@@ -72,13 +72,6 @@ export class ArtistService {
       throw new NotFoundException(ErorrMessagesEnum.ARTIST_NOT_EXIST);
     }
 
-    // this.trackService.setArtistToNull(artist.id);
-    // this.albumService.setArtistToNull(artist.id);
-
-    // const isExistInFavs =
-    //   this.favoritesService.checkIsAlbumExistInFavorites(id);
-    // if (isExistInFavs) this.favoritesService.deleteAlbumFromFavorites(id);
-
     this.artists.splice(artistIndex, 1);
   }
 }

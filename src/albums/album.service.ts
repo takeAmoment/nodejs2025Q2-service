@@ -70,13 +70,6 @@ export class AlbumService {
       throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
     }
 
-    // this.trackService.setAlbumToNull(id);
-    // const isExistInFavs =
-    //   this.favoritesService.checkIsAlbumExistInFavorites(id);
-    // if (isExistInFavs) {
-    //   this.favoritesService.deleteAlbumFromFavorites(id);
-    // }
-
     this.albums.splice(albumId, 1);
   }
 
