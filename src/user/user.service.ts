@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'node:crypto';
 
 import { User } from './user.interface';
 import { CreateUserDto, UpdatePasswordDto } from './dto/createUser.dto';
@@ -31,9 +31,10 @@ export class UserService {
     const { login, password } = dto;
 
     const timeStamp = Date.now();
+    const id = randomUUID();
 
     const newUser: User = {
-      id: uuidv4(),
+      id,
       login,
       password,
       version: 1,

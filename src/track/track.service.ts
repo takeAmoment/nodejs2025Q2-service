@@ -9,8 +9,6 @@ import { UpdateTrackDto } from './dto/updateTrack.dto';
 export class TrackService {
   private readonly tracks: Track[] = [];
 
-  // constructor(private readonly favoritesService: FavoritesService) {}
-
   findAll(): Track[] {
     return this.tracks;
   }
@@ -42,7 +40,6 @@ export class TrackService {
     };
 
     this.tracks.push(track);
-    console.log(this.tracks);
     return track;
   }
 
