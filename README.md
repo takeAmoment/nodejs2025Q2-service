@@ -72,3 +72,17 @@ npm run format
 Press <kbd>F5</kbd> to debug.
 
 For more information, visit: https://code.visualstudio.com/docs/editor/debugging
+
+## How to run application in contaiber (Docker)
+
+1. Create your own .env based on .env.example
+
+```
+cp .env.example .env
+```
+
+2. Run docker compose command
+
+```
+docker compose up -d
+```

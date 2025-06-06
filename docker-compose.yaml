@@ -1,0 +1,45 @@
+services:
+  node:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: home-lib
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    restart: always
+    networks:
+      - app-network
+    volumes:
+      - ./src:/usr/app/src
+
+  postgres:
+    build:
+      context: .
+      dockerfile: database/Dockerfile
+    container_name: db
+    restart: always
+    networks:
+      - app-network
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - pglogs:/var/log/postgresql 
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  pglogs:
