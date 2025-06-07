@@ -19,4 +19,4 @@ COPY . .
 #6 build the project if you need
 
 #7 set default command to run app
-CMD ["npm", "run", "start:dev"]
+CMD ["npm", "run", "migrate:start:dev"]

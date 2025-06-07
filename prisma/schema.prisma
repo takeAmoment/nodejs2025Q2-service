@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model User {
+  id String @id @default(uuid())
+  login String @unique()
+  password String
+  version Int @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Artist {
+  id String @id @default(uuid())
+  name String
+  grammy Boolean @default(false)
+
+  // 1 artist might have few albums (inverse relation one-to-many)
+  albums Album[] @relation("ArtistAlbum")
+  // 1 artist might have some tracks (one-to-many)
+  Track Track[] @relation("ArtistTrack")
+  // relationship with favs
+  favoritedBy Favorites[] @relation("FavoriteArtists")
+}
+
+
+model Track {
+  id String @id @default(uuid())
+  name String
+
+  // track might have artist (one-to-one)
+  artistId String?
+  artist Artist? @relation("ArtistTrack", fields: [artistId], references: [id], onDelete: SetNull)
+  // track might be included to some album (one-to-one)
+  album Album? @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  albumId String?
+
+  duration Int
+
+    // relationship with favs
+  favoritedBy Favorites[] @relation("FavoriteTracks")
+}
+
+model Album {
+  id String @id @default(uuid())
+  name String
+  year Int
+
+  // album might have an author (one-to-one)
+  artist Artist? @relation("ArtistAlbum", fields: [artistId], references: [id], onDelete: SetNull)
+  artistId String?
+  // album could contain several tracks (one-to-many)
+  Track Track[]
+
+  // relationship with favs
+  favoritedBy Favorites[] @relation("FavoriteAlbums")
+}
+
+model Favorites {
+  id String   @id @default(uuid())
+  favoriteArtists Artist[] @relation("FavoriteArtists")
+  favoriteAlbums  Album[]  @relation("FavoriteAlbums")
+  favoriteTracks  Track[]  @relation("FavoriteTracks")
+}

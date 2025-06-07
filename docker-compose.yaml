@@ -24,6 +24,8 @@ services:
       dockerfile: database/Dockerfile
     container_name: db
     restart: always
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
     networks:
       - app-network
     volumes:
