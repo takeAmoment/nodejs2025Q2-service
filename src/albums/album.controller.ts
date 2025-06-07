@@ -23,28 +23,31 @@ export class AlbumController {
   ) {}
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.albumService.findAll();
   }
 
   @Get(':id')
-  findById(@Param('id', ParseUUDIPipe) id: string) {
+  async findById(@Param('id', ParseUUDIPipe) id: string) {
     return this.albumService.findById(id);
   }
 
   @Post()
-  create(@Body() dto: CreateAlbumDto) {
+  async create(@Body() dto: CreateAlbumDto) {
     return this.albumService.create(dto);
   }
 
   @Put(':id')
-  update(@Param('id', ParseUUDIPipe) id: string, @Body() dto: UpdateAlbumDto) {
+  async update(
+    @Param('id', ParseUUDIPipe) id: string,
+    @Body() dto: UpdateAlbumDto,
+  ) {
     return this.albumService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  delete(@Param('id', ParseUUDIPipe) id: string) {
+  async delete(@Param('id', ParseUUDIPipe) id: string) {
     return this.musicLibService.deleteAlbum(id);
   }
 }
