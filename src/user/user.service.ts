@@ -3,22 +3,22 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
 
-import { User } from './user.interface';
-import { CreateUserDto, UpdatePasswordDto } from './dto/createUser.dto';
+import { UpdatePasswordDto } from './dto/createUser.dto';
 import { ErorrMessagesEnum } from 'src/constants';
+import { PrismaService } from 'src/prismaService/prismaService.service';
+import { User, Prisma } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  private readonly users: User[] = [];
+  constructor(private readonly prismaSerice: PrismaService) {}
 
-  findAll(): User[] {
-    return this.users;
+  async findAll(): Promise<User[]> {
+    return this.prismaSerice.user.findMany();
   }
 
-  findById(id: string): User {
-    const user = this.users.find((item) => item.id === id);
+  async findById(id: string): Promise<User> {
+    const user = await this.prismaSerice.user.findUnique({ where: { id } });
 
     if (!user) {
       throw new NotFoundException(ErorrMessagesEnum.USER_NOT_FOUND);
@@ -27,59 +27,31 @@ export class UserService {
     return user;
   }
 
-  create(dto: CreateUserDto): User {
-    const { login, password } = dto;
-
-    const timeStamp = Date.now();
-    const id = randomUUID();
-
-    const newUser: User = {
-      id,
-      login,
-      password,
-      version: 1,
-      createdAt: timeStamp,
-      updatedAt: timeStamp,
-    };
-
-    this.users.push(newUser);
-    return newUser;
+  async create(dto: Prisma.UserCreateInput): Promise<User> {
+    return this.prismaSerice.user.create({ data: dto });
   }
 
-  updateUser(id: string, dto: UpdatePasswordDto): User {
+  async updateUser(id: string, dto: UpdatePasswordDto): Promise<User> {
     const { oldPassword, newPassword } = dto;
 
-    const userIndex = this.users.findIndex((user) => user.id === id);
-
-    if (userIndex === -1) {
-      throw new NotFoundException(ErorrMessagesEnum.USER_NOT_FOUND);
-    }
-
-    const user = this.users[userIndex];
+    const user = await this.findById(id);
 
     if (user.password !== oldPassword) {
       throw new ForbiddenException(ErorrMessagesEnum.WRONG_OLD_PASSWORD);
     }
 
-    const updatedUser: User = {
-      ...user,
-      password: newPassword,
-      version: user.version + 1,
-      updatedAt: Date.now(),
-    };
-
-    this.users[userIndex] = updatedUser;
-
-    return updatedUser;
+    return this.prismaSerice.user.update({
+      where: { id },
+      data: {
+        password: newPassword,
+        version: user.version + 1,
+      },
+    });
   }
 
-  delete(id: string) {
-    const userIndex = this.users.findIndex((user) => user.id === id);
+  async delete(id: string) {
+    await this.findById(id);
 
-    if (userIndex === -1) {
-      throw new NotFoundException(ErorrMessagesEnum.USER_NOT_FOUND);
-    }
-
-    this.users.splice(userIndex, 1);
+    return this.prismaSerice.user.delete({ where: { id } });
   }
 }

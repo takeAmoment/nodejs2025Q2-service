@@ -9,8 +9,8 @@ export class UserEntity {
   password: string;
 
   version: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: Date;
+  updatedAt: Date;
 
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial);

@@ -16,7 +16,9 @@ services:
     networks:
       - app-network
     volumes:
-      - ./src:/usr/app/src
+      - .:/usr/app
+      - /usr/app/node_modules
+    # command: npm run migrate:start:dev
 
   postgres:
     build:

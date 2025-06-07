@@ -22,33 +22,36 @@ export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Get()
-  findAll() {
-    const users = this.userService.findAll();
+  async findAll() {
+    const users = await this.userService.findAll();
     const formattedArr = users.map((user) => new UserEntity(user));
     return formattedArr;
   }
 
   @Get(':id')
-  findOne(@Param('id', ParseUUDIPipe) id: string): UserEntity {
-    return new UserEntity(this.userService.findById(id));
+  async findOne(@Param('id', ParseUUDIPipe) id: string): Promise<UserEntity> {
+    const user = await this.userService.findById(id);
+    return new UserEntity(user);
   }
 
   @Post()
-  create(@Body() dto: CreateUserDto): UserEntity {
-    return new UserEntity(this.userService.create(dto));
+  async create(@Body() dto: CreateUserDto): Promise<UserEntity> {
+    const user = await this.userService.create(dto);
+    return new UserEntity(user);
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id', ParseUUDIPipe) id: string,
     @Body() dto: UpdatePasswordDto,
-  ): UserEntity {
-    return new UserEntity(this.userService.updateUser(id, dto));
+  ): Promise<UserEntity> {
+    const user = await this.userService.updateUser(id, dto);
+    return new UserEntity(user);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  delete(@Param('id', ParseUUDIPipe) id: string) {
+  async delete(@Param('id', ParseUUDIPipe) id: string) {
     return this.userService.delete(id);
   }
 }
