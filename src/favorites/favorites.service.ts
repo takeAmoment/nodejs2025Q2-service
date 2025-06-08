@@ -4,7 +4,7 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { FavoritesResponse, MessageResponse } from './favorites.interface';
-import { ErorrMessagesEnum } from 'src/constants';
+import { ErorrMessagesEnum, MessagesEnum } from 'src/constants';
 import { Prisma, Track, Album, Artist } from '@prisma/client';
 import { PrismaService } from 'src/prismaService/prismaService.service';
 
@@ -103,7 +103,7 @@ export class FavoritesService {
       data: { favoriteTracks: { connect: { id } } },
     });
 
-    return { message: 'Track was added to favorites' };
+    return { message: MessagesEnum.TRACK_WAS_ADDED_TO_FAVS };
   }
 
   async deleteTrackFromFavorites(id: string): Promise<MessageResponse> {
@@ -126,7 +126,7 @@ export class FavoritesService {
       where: { id: favorites.id },
       data: { favoriteTracks: { disconnect: { id: id } } },
     });
-    return { message: 'Track was deleted from favorites' };
+    return { message: MessagesEnum.TRACK_WAS_DELETED_FROM_FAVS };
   }
 
   async addAlbumToFavorites(id: string): Promise<MessageResponse> {
@@ -142,7 +142,7 @@ export class FavoritesService {
       data: { favoriteAlbums: { connect: { id } } },
     });
 
-    return { message: 'The album was added to favorites.' };
+    return { message: MessagesEnum.ALBUM_WAS_ADDED_TO_FAVS };
   }
 
   async deleteAlbumFromFavorites(id: string): Promise<MessageResponse> {
@@ -166,7 +166,7 @@ export class FavoritesService {
       data: { favoriteAlbums: { disconnect: { id } } },
     });
 
-    return { message: 'The album was deleted from favorites.' };
+    return { message: MessagesEnum.ALBUM_WAS_DELTED_FROM_FAVS };
   }
 
   async addArtistToFavorites(id: string): Promise<MessageResponse> {
@@ -184,7 +184,7 @@ export class FavoritesService {
       data: { favoriteArtists: { connect: { id } } },
     });
 
-    return { message: 'The artist was added to favorites.' };
+    return { message: MessagesEnum.ARTIST_WAS_ADDED_TO_FAVS };
   }
 
   async deleteArtistFromFavorites(id: string): Promise<MessageResponse> {
@@ -209,6 +209,6 @@ export class FavoritesService {
       data: { favoriteArtists: { disconnect: { id } } },
     });
 
-    return { message: 'The artist was deleted from favorites.' };
+    return { message: MessagesEnum.ARTIST_WAS_DELETED_FROM_FAVS };
   }
 }

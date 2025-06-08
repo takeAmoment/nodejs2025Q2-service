@@ -16,4 +16,14 @@ export enum ErorrMessagesEnum {
   ALBUM_NOT_EXIST = 'Such album does not exist.',
   ALBUM_NOT_IN_FAVS = 'This album is not in favorites.',
   ARTIST_NOT_IN_FAVS = 'This artist is not in favorites.',
+  TRACK_NOT_IN_FAVS = 'This track is not in favorites.',
+}
+
+export enum MessagesEnum {
+  TRACK_WAS_ADDED_TO_FAVS = 'Track was added to favorites.',
+  TRACK_WAS_DELETED_FROM_FAVS = 'Track was deleted from favorites.',
+  ALBUM_WAS_ADDED_TO_FAVS = 'The album was added to favorites.',
+  ALBUM_WAS_DELTED_FROM_FAVS = 'The album was deleted from favorites.',
+  ARTIST_WAS_ADDED_TO_FAVS = 'The artist was added to favorites.',
+  ARTIST_WAS_DELETED_FROM_FAVS = 'The artist was deleted from favorites.',
 }
