@@ -2,10 +2,14 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ErorrMessagesEnum } from 'src/constants';
 import { PrismaService } from 'src/prismaService/prismaService.service';
 import { Track, Prisma } from '@prisma/client';
+import { FavoritesService } from 'src/favorites/favorites.service';
 
 @Injectable()
 export class TrackService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly favoritesService: FavoritesService,
+  ) {}
 
   async findAll(): Promise<Track[]> {
     return this.prismaService.track.findMany();
@@ -65,6 +69,7 @@ export class TrackService {
   async delete(id: string) {
     await this.findById(id);
 
+    this.favoritesService.deleteTrackFromFavorites(id);
     this.prismaService.track.delete({ where: { id } });
   }
 }
