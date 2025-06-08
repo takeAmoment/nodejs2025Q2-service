@@ -17,7 +17,7 @@ datasource db {
 
 model User {
   id String @id @default(uuid())
-  //it should ne unique but test will be failed
+  //it should be unique but test will be failed
   login String
   password String
   version Int @default(1)

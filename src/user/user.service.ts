@@ -28,7 +28,9 @@ export class UserService {
   }
 
   async create(dto: Prisma.UserCreateInput): Promise<User> {
-    return this.prismaSerice.user.create({ data: dto });
+    return this.prismaSerice.user.create({
+      data: dto,
+    });
   }
 
   async updateUser(id: string, dto: UpdatePasswordDto): Promise<User> {
