@@ -13,14 +13,10 @@ import { RoutingPathsEnum } from 'src/constants';
 import { CreateTrackDto } from './dto/createTrack.dto';
 import { ParseUUDIPipe } from 'src/shared/pipes/parse-uudi.pipe';
 import { UpdateTrackDto } from './dto/updateTrack.dto';
-import { MusicLibService } from 'src/music-lib/music-lib.service';
 
 @Controller(RoutingPathsEnum.TRACK)
 export class TrackController {
-  constructor(
-    private readonly trackService: TrackService,
-    private readonly musicLibService: MusicLibService,
-  ) {}
+  constructor(private readonly trackService: TrackService) {}
 
   @Get()
   async findAll() {
@@ -48,6 +44,6 @@ export class TrackController {
   @Delete(':id')
   @HttpCode(204)
   async delete(@Param('id', ParseUUDIPipe) id: string) {
-    return this.musicLibService.deleteTrack(id);
+    return this.trackService.delete(id);
   }
 }
