@@ -86,3 +86,15 @@ cp .env.example .env
 ```
 docker compose up -d
 ```
+
+* You can check vulnerabilities with next command:
+
+```
+IMAGE_NAME=<image-name> npm run scan
+```
+
+* You can find published image
+
+```
+docker pull alekspekhota/homelib:v1
+```
