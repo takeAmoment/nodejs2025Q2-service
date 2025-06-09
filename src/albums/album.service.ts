@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ErorrMessagesEnum } from 'src/constants';
-import { Album, Prisma } from '@prisma/client';
+import { Album } from '@prisma/client';
 import { PrismaService } from 'src/prismaService/prismaService.service';
 import { FavoritesService } from 'src/favorites/favorites.service';
+import { UpdateAlbumDto } from './dto/updateAlbum.dto';
+import { CreateAlbumDto } from './dto/createAlbum.dto';
 
 @Injectable()
 export class AlbumService {
@@ -20,30 +22,29 @@ export class AlbumService {
   }
 
   async findById(id: string): Promise<Album> {
-    const track = this.prismaService.album.findUnique({ where: { id } });
+    const album = await this.prismaService.album.findUnique({ where: { id } });
 
-    if (!track) {
+    if (!album) {
       throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
     }
 
-    return track;
+    return album;
   }
 
-  async create(dto: Prisma.AlbumCreateInput): Promise<Album> {
-    const { name, year, artist } = dto;
+  async create(dto: CreateAlbumDto): Promise<Album> {
+    const { name, year, artistId } = dto;
+
     return this.prismaService.album.create({
       data: {
         name,
         year,
-        artist: artist?.connect
-          ? { connect: { id: artist.connect.id } }
-          : undefined,
+        artist: artistId ? { connect: { id: artistId } } : undefined,
       },
     });
   }
 
-  async update(id: string, dto: Prisma.AlbumUpdateInput): Promise<Album> {
-    const { name, artist, year } = dto;
+  async update(id: string, dto: UpdateAlbumDto): Promise<Album> {
+    const { name, artistId, year } = dto;
 
     await this.findById(id);
 
@@ -52,17 +53,16 @@ export class AlbumService {
       data: {
         name,
         year,
-        artist: artist?.connect
-          ? { connect: { id: artist?.connect.id } }
-          : undefined,
+        artist: artistId ? { connect: { id: artistId } } : undefined,
       },
     });
   }
 
   async delete(id: string) {
     await this.findById(id);
+    const isInFavs = await this.favoritesService.checkIsAlbumExistInFavs(id);
+    if (isInFavs) await this.favoritesService.deleteAlbumFromFavorites(id);
 
-    this.favoritesService.deleteAlbumFromFavorites(id);
-    this.prismaService.album.delete({ where: { id } });
+    await this.prismaService.album.delete({ where: { id } });
   }
 }

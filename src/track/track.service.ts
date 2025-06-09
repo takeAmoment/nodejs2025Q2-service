@@ -1,8 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ErorrMessagesEnum } from 'src/constants';
 import { PrismaService } from 'src/prismaService/prismaService.service';
-import { Track, Prisma } from '@prisma/client';
+import { Track } from '@prisma/client';
 import { FavoritesService } from 'src/favorites/favorites.service';
+import { UpdateTrackDto } from './dto/updateTrack.dto';
+import { CreateTrackDto } from './dto/createTrack.dto';
 
 @Injectable()
 export class TrackService {
@@ -29,25 +31,21 @@ export class TrackService {
     return track;
   }
 
-  async create(dto: Prisma.TrackCreateInput): Promise<Track> {
-    const { artist, album, duration, name } = dto;
+  async create(dto: CreateTrackDto): Promise<Track> {
+    const { artistId, albumId, duration, name } = dto;
 
     return this.prismaService.track.create({
       data: {
         name,
         duration,
-        artist: artist?.connect
-          ? { connect: { id: artist.connect.id } }
-          : undefined,
-        album: album?.connect
-          ? { connect: { id: album.connect.id } }
-          : undefined,
+        artist: artistId ? { connect: { id: artistId } } : undefined,
+        album: albumId ? { connect: { id: albumId } } : undefined,
       },
     });
   }
 
-  async update(id: string, dto: Prisma.TrackUpdateInput) {
-    const { name, album, artist, duration } = dto;
+  async update(id: string, dto: UpdateTrackDto) {
+    const { name, albumId, artistId, duration } = dto;
 
     await this.findById(id);
 
@@ -56,20 +54,17 @@ export class TrackService {
       data: {
         name,
         duration,
-        artist: artist?.connect
-          ? { connect: { id: artist.connect.id } }
-          : undefined,
-        album: album?.connect
-          ? { connect: { id: album.connect.id } }
-          : undefined,
+        artist: artistId ? { connect: { id: artistId } } : undefined,
+        album: albumId ? { connect: { id: albumId } } : undefined,
       },
     });
   }
 
   async delete(id: string) {
     await this.findById(id);
+    const isInFavs = await this.favoritesService.checkIsTrackExistInFavs(id);
+    if (isInFavs) await this.favoritesService.deleteTrackFromFavorites(id);
 
-    this.favoritesService.deleteTrackFromFavorites(id);
-    this.prismaService.track.delete({ where: { id } });
+    await this.prismaService.track.delete({ where: { id } });
   }
 }

@@ -44,8 +44,9 @@ export class ArtistService {
 
   async delete(id: string) {
     await this.findById(id);
+    const isInFavs = await this.favoritesService.checkIsArtistExistInFavs(id);
+    if (isInFavs) await this.favoritesService.deleteArtistFromFavorites(id);
 
-    this.favoritesService.deleteArtistFromFavorites(id);
-    this.prismaService.artist.delete({ where: { id } });
+    await this.prismaService.artist.delete({ where: { id } });
   }
 }

@@ -21,13 +21,26 @@ export class FavoritesService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getFavorites(): Promise<FavoritesWithIncludes> {
-    return this.prismaService.favorites.findFirst({
+    let favorites = await this.prismaService.favorites.findFirst({
       include: {
         favoriteAlbums: true,
         favoriteArtists: true,
         favoriteTracks: true,
       },
     });
+
+    if (!favorites) {
+      favorites = await this.prismaService.favorites.create({
+        data: {},
+        include: {
+          favoriteAlbums: true,
+          favoriteArtists: true,
+          favoriteTracks: true,
+        },
+      });
+    }
+
+    return favorites;
   }
 
   async getTrack(id: string): Promise<Track> {
@@ -66,15 +79,15 @@ export class FavoritesService {
     const favorites = await this.getFavorites();
 
     const trackIds = [
-      ...new Set(favorites.favoriteTracks.map((track) => track.id)),
+      ...new Set(favorites?.favoriteTracks?.map((track) => track.id)),
     ];
 
     const artistIds = [
-      ...new Set(favorites.favoriteArtists.map((artist) => artist.id)),
+      ...new Set(favorites?.favoriteArtists?.map((artist) => artist.id)),
     ];
 
     const albumIds = [
-      ...new Set(favorites.favoriteArtists.map((album) => album.id)),
+      ...new Set(favorites?.favoriteAlbums?.map((album) => album.id)),
     ];
 
     const tracks = await this.prismaService.track.findMany({
@@ -90,9 +103,39 @@ export class FavoritesService {
     return { tracks: tracks, albums: albums, artists: artists };
   }
 
+  async checkIsArtistExistInFavs(id: string): Promise<boolean> {
+    const favorites = await this.getFavorites();
+
+    const isExistInFavs = favorites?.favoriteArtists.find(
+      (item) => item.id === id,
+    );
+
+    return isExistInFavs ? true : false;
+  }
+
+  async checkIsAlbumExistInFavs(id: string): Promise<boolean> {
+    const favorites = await this.getFavorites();
+
+    const isExistInFavs = favorites?.favoriteAlbums.find(
+      (item) => item.id === id,
+    );
+
+    return isExistInFavs ? true : false;
+  }
+
+  async checkIsTrackExistInFavs(id: string): Promise<boolean> {
+    const favorites = await this.getFavorites();
+
+    const isExistInFavs = favorites?.favoriteTracks.find(
+      (item) => item.id === id,
+    );
+
+    return isExistInFavs ? true : false;
+  }
+
   async addTrackToFavorites(id: string): Promise<MessageResponse> {
     try {
-      await this.getAlbum(id);
+      await this.getTrack(id);
     } catch (error) {
       throw new UnprocessableEntityException(ErorrMessagesEnum.TRACK_NOT_FOUND);
     }
@@ -108,13 +151,13 @@ export class FavoritesService {
 
   async deleteTrackFromFavorites(id: string): Promise<MessageResponse> {
     try {
-      await this.getAlbum(id);
+      await this.getTrack(id);
     } catch (error) {
       throw new UnprocessableEntityException(ErorrMessagesEnum.TRACK_NOT_FOUND);
     }
     const favorites = await this.getFavorites();
 
-    const favoriteTrack = favorites.favoriteTracks.find(
+    const favoriteTrack = favorites?.favoriteTracks.find(
       (item) => item.id === id,
     );
 
@@ -124,7 +167,7 @@ export class FavoritesService {
 
     await this.prismaService.favorites.update({
       where: { id: favorites.id },
-      data: { favoriteTracks: { disconnect: { id: id } } },
+      data: { favoriteTracks: { disconnect: { id } } },
     });
     return { message: MessagesEnum.TRACK_WAS_DELETED_FROM_FAVS };
   }
@@ -153,7 +196,7 @@ export class FavoritesService {
     }
     const favorites = await this.getFavorites();
 
-    const isExistInFavs = favorites.favoriteAlbums.find(
+    const isExistInFavs = favorites?.favoriteAlbums.find(
       (item) => item.id === id,
     );
 
@@ -179,7 +222,7 @@ export class FavoritesService {
     }
     const favorites = await this.getFavorites();
 
-    this.prismaService.favorites.update({
+    await this.prismaService.favorites.update({
       where: { id: favorites.id },
       data: { favoriteArtists: { connect: { id } } },
     });
@@ -197,14 +240,14 @@ export class FavoritesService {
     }
     const favorites = await this.getFavorites();
 
-    const isExistInFavs = favorites.favoriteArtists.find(
+    const isExistInFavs = favorites?.favoriteArtists.find(
       (item) => item.id === id,
     );
 
     if (!isExistInFavs) {
       throw new NotFoundException(ErorrMessagesEnum.ARTIST_NOT_IN_FAVS);
     }
-    this.prismaService.favorites.update({
+    await this.prismaService.favorites.update({
       where: { id: favorites.id },
       data: { favoriteArtists: { disconnect: { id } } },
     });
