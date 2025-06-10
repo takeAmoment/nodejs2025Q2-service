@@ -9,10 +9,21 @@ export class UserEntity {
   password: string;
 
   version: number;
-  createdAt: number;
-  updatedAt: number;
+  createdAt: number | Date;
+  updatedAt: number | Date;
 
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial);
+    if (partial.createdAt instanceof Date) {
+      this.createdAt = partial.createdAt.getTime();
+    } else if (typeof partial.createdAt === 'number') {
+      this.createdAt = partial.createdAt;
+    }
+
+    if (partial.updatedAt instanceof Date) {
+      this.updatedAt = partial.updatedAt.getTime();
+    } else if (typeof partial.updatedAt === 'number') {
+      this.createdAt = partial.updatedAt;
+    }
   }
 }

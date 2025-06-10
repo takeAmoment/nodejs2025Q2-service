@@ -13,38 +13,37 @@ import { RoutingPathsEnum } from 'src/constants';
 import { CreateTrackDto } from './dto/createTrack.dto';
 import { ParseUUDIPipe } from 'src/shared/pipes/parse-uudi.pipe';
 import { UpdateTrackDto } from './dto/updateTrack.dto';
-import { MusicLibService } from 'src/music-lib/music-lib.service';
 
 @Controller(RoutingPathsEnum.TRACK)
 export class TrackController {
-  constructor(
-    private readonly trackService: TrackService,
-    private readonly musicLibService: MusicLibService,
-  ) {}
+  constructor(private readonly trackService: TrackService) {}
 
   @Get()
-  findAll() {
+  async findAll() {
     return this.trackService.findAll();
   }
 
   @Get(':id')
-  findById(@Param('id', ParseUUDIPipe) id: string) {
+  async findById(@Param('id', ParseUUDIPipe) id: string) {
     return this.trackService.findById(id);
   }
 
   @Post()
-  create(@Body() dto: CreateTrackDto) {
+  async create(@Body() dto: CreateTrackDto) {
     return this.trackService.create(dto);
   }
 
   @Put(':id')
-  update(@Param('id', ParseUUDIPipe) id: string, @Body() dto: UpdateTrackDto) {
+  async update(
+    @Param('id', ParseUUDIPipe) id: string,
+    @Body() dto: UpdateTrackDto,
+  ) {
     return this.trackService.update(id, dto);
   }
 
   @Delete(':id')
   @HttpCode(204)
-  delete(@Param('id', ParseUUDIPipe) id: string) {
-    return this.musicLibService.deleteTrack(id);
+  async delete(@Param('id', ParseUUDIPipe) id: string) {
+    return this.trackService.delete(id);
   }
 }

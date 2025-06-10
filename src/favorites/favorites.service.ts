@@ -3,137 +3,255 @@ import {
   NotFoundException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { AlbumService } from 'src/albums/album.service';
-import { ArtistService } from 'src/artist/artist.service';
-import { TrackService } from 'src/track/track.service';
 import { FavoritesResponse, MessageResponse } from './favorites.interface';
-import { ErorrMessagesEnum } from 'src/constants';
+import { ErorrMessagesEnum, MessagesEnum } from 'src/constants';
+import { Prisma, Track, Album, Artist } from '@prisma/client';
+import { PrismaService } from 'src/prismaService/prismaService.service';
+
+type FavoritesWithIncludes = Prisma.FavoritesGetPayload<{
+  include: {
+    favoriteAlbums: true;
+    favoriteArtists: true;
+    favoriteTracks: true;
+  };
+}>;
 
 @Injectable()
 export class FavoritesService {
-  private favoriteArtistIds = new Set<string>();
-  private favoriteAlbumIds = new Set<string>();
-  private favoriteTrackIds = new Set<string>();
+  constructor(private readonly prismaService: PrismaService) {}
 
-  constructor(
-    private readonly artistService: ArtistService,
-    private readonly albumService: AlbumService,
-    private readonly trackService: TrackService,
-  ) {}
+  async getFavorites(): Promise<FavoritesWithIncludes> {
+    let favorites = await this.prismaService.favorites.findFirst({
+      include: {
+        favoriteAlbums: true,
+        favoriteArtists: true,
+        favoriteTracks: true,
+      },
+    });
 
-  findAll(): FavoritesResponse {
-    const tracks = this.trackService.findAllByIds([...this.favoriteTrackIds]);
-    const artists = this.artistService.findAllByIds([
-      ...this.favoriteArtistIds,
-    ]);
-    const albums = this.albumService.findAllByIds([...this.favoriteAlbumIds]);
+    if (!favorites) {
+      favorites = await this.prismaService.favorites.create({
+        data: {},
+        include: {
+          favoriteAlbums: true,
+          favoriteArtists: true,
+          favoriteTracks: true,
+        },
+      });
+    }
+
+    return favorites;
+  }
+
+  async getTrack(id: string): Promise<Track> {
+    const track = await this.prismaService.track.findUnique({ where: { id } });
+
+    if (!track) {
+      throw new NotFoundException(ErorrMessagesEnum.TRACK_NOT_FOUND);
+    }
+
+    return track;
+  }
+
+  async getAlbum(id: string): Promise<Album> {
+    const album = await this.prismaService.album.findUnique({ where: { id } });
+
+    if (!album) {
+      throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
+    }
+
+    return album;
+  }
+
+  async getArtist(id: string): Promise<Artist> {
+    const artist = await this.prismaService.artist.findUnique({
+      where: { id },
+    });
+
+    if (!artist) {
+      throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
+    }
+
+    return artist;
+  }
+
+  async findAll(): Promise<FavoritesResponse> {
+    const favorites = await this.getFavorites();
+
+    const trackIds = [
+      ...new Set(favorites?.favoriteTracks?.map((track) => track.id)),
+    ];
+
+    const artistIds = [
+      ...new Set(favorites?.favoriteArtists?.map((artist) => artist.id)),
+    ];
+
+    const albumIds = [
+      ...new Set(favorites?.favoriteAlbums?.map((album) => album.id)),
+    ];
+
+    const tracks = await this.prismaService.track.findMany({
+      where: { id: { in: trackIds } },
+    });
+    const artists = await this.prismaService.artist.findMany({
+      where: { id: { in: artistIds } },
+    });
+    const albums = await this.prismaService.album.findMany({
+      where: { id: { in: albumIds } },
+    });
 
     return { tracks: tracks, albums: albums, artists: artists };
   }
 
-  addTrackToFavorites(id: string): MessageResponse {
+  async checkIsArtistExistInFavs(id: string): Promise<boolean> {
+    const favorites = await this.getFavorites();
+
+    const isExistInFavs = favorites?.favoriteArtists.find(
+      (item) => item.id === id,
+    );
+
+    return isExistInFavs ? true : false;
+  }
+
+  async checkIsAlbumExistInFavs(id: string): Promise<boolean> {
+    const favorites = await this.getFavorites();
+
+    const isExistInFavs = favorites?.favoriteAlbums.find(
+      (item) => item.id === id,
+    );
+
+    return isExistInFavs ? true : false;
+  }
+
+  async checkIsTrackExistInFavs(id: string): Promise<boolean> {
+    const favorites = await this.getFavorites();
+
+    const isExistInFavs = favorites?.favoriteTracks.find(
+      (item) => item.id === id,
+    );
+
+    return isExistInFavs ? true : false;
+  }
+
+  async addTrackToFavorites(id: string): Promise<MessageResponse> {
     try {
-      this.trackService.findById(id);
+      await this.getTrack(id);
     } catch (error) {
-      throw new UnprocessableEntityException(
-        ErorrMessagesEnum.ARTIST_NOT_EXIST,
-      );
-    }
-
-    this.favoriteTrackIds.add(id);
-
-    return { message: 'Track was added to favorites' };
-  }
-
-  checkIsTrackExistInFavorites(id: string): boolean {
-    return this.favoriteTrackIds.has(id);
-  }
-
-  checkIsAlbumExistInFavorites(id: string): boolean {
-    return this.favoriteAlbumIds.has(id);
-  }
-
-  checkIsArtistExistInFavorites(id: string): boolean {
-    return this.favoriteArtistIds.has(id);
-  }
-
-  deleteTrackFromFavorites(id: string): MessageResponse {
-    const track = this.trackService.findById(id);
-
-    if (!track) {
       throw new UnprocessableEntityException(ErorrMessagesEnum.TRACK_NOT_FOUND);
     }
+    const favorites = await this.getFavorites();
 
-    const favoriteTrack = this.favoriteTrackIds.has(id);
+    await this.prismaService.favorites.update({
+      where: { id: favorites.id },
+      data: { favoriteTracks: { connect: { id } } },
+    });
+
+    return { message: MessagesEnum.TRACK_WAS_ADDED_TO_FAVS };
+  }
+
+  async deleteTrackFromFavorites(id: string): Promise<MessageResponse> {
+    try {
+      await this.getTrack(id);
+    } catch (error) {
+      throw new UnprocessableEntityException(ErorrMessagesEnum.TRACK_NOT_FOUND);
+    }
+    const favorites = await this.getFavorites();
+
+    const favoriteTrack = favorites?.favoriteTracks.find(
+      (item) => item.id === id,
+    );
 
     if (!favoriteTrack) {
       throw new NotFoundException(ErorrMessagesEnum.TRACK_NOT_FOUND);
     }
 
-    this.favoriteTrackIds.delete(id);
-    return { message: 'Track was deleted from favorites' };
+    await this.prismaService.favorites.update({
+      where: { id: favorites.id },
+      data: { favoriteTracks: { disconnect: { id } } },
+    });
+    return { message: MessagesEnum.TRACK_WAS_DELETED_FROM_FAVS };
   }
 
-  addAlbumToFavorites(id: string): MessageResponse {
+  async addAlbumToFavorites(id: string): Promise<MessageResponse> {
     try {
-      this.albumService.findById(id);
+      await this.getAlbum(id);
     } catch (error) {
-      throw new UnprocessableEntityException(
-        ErorrMessagesEnum.ARTIST_NOT_EXIST,
-      );
-    }
-
-    this.favoriteAlbumIds.add(id);
-
-    return { message: 'The album was added to favorites.' };
-  }
-
-  deleteAlbumFromFavorites(id: string): MessageResponse {
-    const album = this.albumService.findById(id);
-
-    if (!album) {
       throw new UnprocessableEntityException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
     }
+    const favorites = await this.getFavorites();
 
-    const isExistInFavs = this.favoriteAlbumIds.has(id);
+    await this.prismaService.favorites.update({
+      where: { id: favorites.id },
+      data: { favoriteAlbums: { connect: { id } } },
+    });
+
+    return { message: MessagesEnum.ALBUM_WAS_ADDED_TO_FAVS };
+  }
+
+  async deleteAlbumFromFavorites(id: string): Promise<MessageResponse> {
+    try {
+      await this.getAlbum(id);
+    } catch (error) {
+      throw new UnprocessableEntityException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
+    }
+    const favorites = await this.getFavorites();
+
+    const isExistInFavs = favorites?.favoriteAlbums.find(
+      (item) => item.id === id,
+    );
 
     if (!isExistInFavs) {
       throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_IN_FAVS);
     }
 
-    this.favoriteAlbumIds.delete(album.id);
+    await this.prismaService.favorites.update({
+      where: { id: favorites.id },
+      data: { favoriteAlbums: { disconnect: { id } } },
+    });
 
-    return { message: 'The album was deleted from favorites.' };
+    return { message: MessagesEnum.ALBUM_WAS_DELTED_FROM_FAVS };
   }
 
-  addArtistToFavorites(id: string): MessageResponse {
+  async addArtistToFavorites(id: string): Promise<MessageResponse> {
     try {
-      this.artistService.findById(id);
+      await this.getArtist(id);
     } catch (error) {
       throw new UnprocessableEntityException(
         ErorrMessagesEnum.ARTIST_NOT_EXIST,
       );
     }
+    const favorites = await this.getFavorites();
 
-    this.favoriteArtistIds.add(id);
+    await this.prismaService.favorites.update({
+      where: { id: favorites.id },
+      data: { favoriteArtists: { connect: { id } } },
+    });
 
-    return { message: 'The artist was added to favorites.' };
+    return { message: MessagesEnum.ARTIST_WAS_ADDED_TO_FAVS };
   }
 
-  deleteArtistFromFavorites(id: string): MessageResponse {
-    const artist = this.artistService.findById(id);
-
-    if (!artist) {
-      throw new UnprocessableEntityException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
+  async deleteArtistFromFavorites(id: string): Promise<MessageResponse> {
+    try {
+      await this.getArtist(id);
+    } catch (error) {
+      throw new UnprocessableEntityException(
+        ErorrMessagesEnum.ARTIST_NOT_EXIST,
+      );
     }
+    const favorites = await this.getFavorites();
 
-    const isExistInFavs = this.favoriteArtistIds.has(id);
+    const isExistInFavs = favorites?.favoriteArtists.find(
+      (item) => item.id === id,
+    );
 
     if (!isExistInFavs) {
       throw new NotFoundException(ErorrMessagesEnum.ARTIST_NOT_IN_FAVS);
     }
-    this.favoriteArtistIds.delete(artist.id);
+    await this.prismaService.favorites.update({
+      where: { id: favorites.id },
+      data: { favoriteArtists: { disconnect: { id } } },
+    });
 
-    return { message: 'The artist was deleted from favorites.' };
+    return { message: MessagesEnum.ARTIST_WAS_DELETED_FROM_FAVS };
   }
 }

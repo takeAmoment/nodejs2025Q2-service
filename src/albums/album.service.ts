@@ -1,83 +1,68 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Album } from './album.interface';
-import { randomUUID } from 'crypto';
 import { ErorrMessagesEnum } from 'src/constants';
-import { CreateAlbumDto } from './dto/createAlbum.dto';
+import { Album } from '@prisma/client';
+import { PrismaService } from 'src/prismaService/prismaService.service';
+import { FavoritesService } from 'src/favorites/favorites.service';
 import { UpdateAlbumDto } from './dto/updateAlbum.dto';
+import { CreateAlbumDto } from './dto/createAlbum.dto';
 
 @Injectable()
 export class AlbumService {
-  private readonly albums: Album[] = [];
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly favoritesService: FavoritesService,
+  ) {}
 
-  findAll(): Album[] {
-    return this.albums;
+  async findAll(): Promise<Album[]> {
+    return this.prismaService.album.findMany();
   }
 
-  findAllByIds(ids: string[]): Album[] {
-    return this.albums.filter((album) => ids.includes(album.id));
+  async findAllByIds(ids: string[]): Promise<Album[]> {
+    return this.prismaService.album.findMany({ where: { id: { in: ids } } });
   }
 
-  findById(id: string): Album {
-    const track = this.albums.find((item) => item.id === id);
+  async findById(id: string): Promise<Album> {
+    const album = await this.prismaService.album.findUnique({ where: { id } });
 
-    if (!track) {
+    if (!album) {
       throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
     }
 
-    return track;
-  }
-
-  create(dto: CreateAlbumDto): Album {
-    const { name, artistId, year } = dto;
-    const id = randomUUID();
-
-    const album: Album = {
-      id,
-      name,
-      artistId,
-      year,
-    };
-
-    this.albums.push(album);
     return album;
   }
 
-  update(id: string, dto: UpdateAlbumDto): Album {
+  async create(dto: CreateAlbumDto): Promise<Album> {
+    const { name, year, artistId } = dto;
+
+    return this.prismaService.album.create({
+      data: {
+        name,
+        year,
+        artist: artistId ? { connect: { id: artistId } } : undefined,
+      },
+    });
+  }
+
+  async update(id: string, dto: UpdateAlbumDto): Promise<Album> {
     const { name, artistId, year } = dto;
 
-    const albumId = this.albums.findIndex((item) => item.id === id);
-    if (albumId === -1) {
-      throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
-    }
+    await this.findById(id);
 
-    const album = this.albums[albumId];
-
-    const updatedAlbum: Album = {
-      id: album.id,
-      name: name,
-      artistId: artistId || album.artistId,
-      year,
-    };
-
-    this.albums[albumId] = updatedAlbum;
-
-    return updatedAlbum;
-  }
-
-  delete(id: string) {
-    const albumId = this.albums.findIndex((item) => item.id === id);
-    if (albumId === -1) {
-      throw new NotFoundException(ErorrMessagesEnum.ALBUM_NOT_EXIST);
-    }
-
-    this.albums.splice(albumId, 1);
-  }
-
-  setArtistToNull(artistId: string) {
-    this.albums.forEach((item) => {
-      if (item.artistId === artistId) {
-        item.artistId = null;
-      }
+    return this.prismaService.album.update({
+      where: { id },
+      data: {
+        name,
+        year,
+        artist: artistId ? { connect: { id: artistId } } : undefined,
+      },
     });
+  }
+
+  async delete(id: string) {
+    await this.findById(id);
+    const isInFavs = await this.favoritesService.checkIsAlbumExistInFavs(id);
+    if (isInFavs) await this.favoritesService.deleteAlbumFromFavorites(id);
+
+    await this.prismaService.album.delete({ where: { id } });
   }
 }
