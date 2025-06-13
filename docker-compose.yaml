@@ -18,7 +18,7 @@ services:
     volumes:
       - .:/usr/app
       - /usr/app/node_modules
-    # command: npm run migrate:start:dev
+      - ./logs:/usr/app/logs
 
   postgres:
     build:

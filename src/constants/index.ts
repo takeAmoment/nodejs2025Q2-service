@@ -17,6 +17,7 @@ export enum ErorrMessagesEnum {
   ALBUM_NOT_IN_FAVS = 'This album is not in favorites.',
   ARTIST_NOT_IN_FAVS = 'This artist is not in favorites.',
   TRACK_NOT_IN_FAVS = 'This track is not in favorites.',
+  INTERNAL_SERVER_ERROR = 'Something went wrong on the server side.',
 }
 
 export enum MessagesEnum {
@@ -27,3 +28,28 @@ export enum MessagesEnum {
   ARTIST_WAS_ADDED_TO_FAVS = 'The artist was added to favorites.',
   ARTIST_WAS_DELETED_FROM_FAVS = 'The artist was deleted from favorites.',
 }
+
+export const LOGS_FOLDER_NAME = 'logs';
+export const LOGS_FOLDER_FILE_NAME = 'app.log';
+
+export enum LogLevelsEnum {
+  VERBOSE = 'verbose',
+  DEBUG = 'debug',
+  LOG = 'log',
+  WARN = 'warn',
+  ERROR = 'error',
+  FATAL = 'fatal',
+}
+// according to severity
+export const LOG_LEVELS = [
+  LogLevelsEnum.VERBOSE,
+  LogLevelsEnum.DEBUG,
+  LogLevelsEnum.LOG,
+  LogLevelsEnum.WARN,
+  LogLevelsEnum.ERROR,
+  LogLevelsEnum.FATAL,
+] as const;
+
+export type LogLevel = (typeof LOG_LEVELS)[number];
+
+export const BYTES_IN_KB = 1024;
