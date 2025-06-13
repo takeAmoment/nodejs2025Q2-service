@@ -53,3 +53,7 @@ export const LOG_LEVELS = [
 export type LogLevel = (typeof LOG_LEVELS)[number];
 
 export const BYTES_IN_KB = 1024;
+
+// used to highlight request & response logs
+export const REQUEST_COLOR = '\x1b[34m';
+export const RESPONSE_COLOR = '\x1b[35m';
