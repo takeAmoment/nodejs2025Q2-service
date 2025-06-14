@@ -5,6 +5,7 @@ import * as swaggerUi from 'swagger-ui-express';
 import * as YAML from 'yamljs';
 import * as path from 'path';
 import { LoggingService } from './shared/logger/logging.service';
+import { AppExceptionFilter } from './shared/filters/app-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -15,6 +16,26 @@ async function bootstrap() {
 
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
   app.useLogger(app.get(LoggingService));
+  const logger = app.get(LoggingService);
+  app.useGlobalFilters(new AppExceptionFilter(logger));
+  //for tests
+  // setTimeout(() => {
+  //   throw new Error('This is an uncaught exception');
+  // }, 1000);
+  // setTimeout(() => {
+  //   Promise.reject(new Error('This is an unhandled rejection'));
+  // }, 1000);
+
+  process.on('uncaughtException', (err) => {
+    logger.error(`Uncaught Exception: ${err.message}`, err.stack);
+  });
+
+  process.on('unhandledRejection', (reason: any) => {
+    logger.error(
+      `Unhandled Rejection: ${reason?.message || reason}`,
+      reason?.stack,
+    );
+  });
 
   //add validation pipe globaly
   app.useGlobalPipes(

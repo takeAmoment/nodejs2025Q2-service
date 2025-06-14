@@ -17,7 +17,7 @@ export enum ErorrMessagesEnum {
   ALBUM_NOT_IN_FAVS = 'This album is not in favorites.',
   ARTIST_NOT_IN_FAVS = 'This artist is not in favorites.',
   TRACK_NOT_IN_FAVS = 'This track is not in favorites.',
-  INTERNAL_SERVER_ERROR = 'Something went wrong on the server side.',
+  INTERNAL_SERVER_ERROR = 'Internal Server Error.',
 }
 
 export enum MessagesEnum {
