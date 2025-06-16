@@ -4,10 +4,15 @@ export enum RoutingPathsEnum {
   ARTIST = 'artist',
   ALBUM = 'album',
   FAVS = 'favs',
+  AUTH = 'auth',
+  SIGNUP = 'signup',
+  LOGIN = 'login',
+  REFRESH = 'refresh',
 }
 
 export enum ErorrMessagesEnum {
   USER_NOT_FOUND = 'Such user does not exist.',
+  USER_EXISTS = 'Such user already exists.',
   WRONG_OLD_PASSWORD = 'The old password is incorrect.',
   INCORECT_UUDI_FORMAT = 'Invalid UUDI format.',
   USER_EXIST = 'User with with login already exists.',
@@ -18,6 +23,9 @@ export enum ErorrMessagesEnum {
   ARTIST_NOT_IN_FAVS = 'This artist is not in favorites.',
   TRACK_NOT_IN_FAVS = 'This track is not in favorites.',
   INTERNAL_SERVER_ERROR = 'Internal Server Error.',
+  INVALID_REFRESH_TOKEN = 'Missing or invalid refresh token.',
+  WRONG_LOGIN = 'The user with such login does not exist.',
+  WRONG_PASSWORD = 'The password is incorrect. Please check the password.',
 }
 
 export enum MessagesEnum {
@@ -27,6 +35,7 @@ export enum MessagesEnum {
   ALBUM_WAS_DELTED_FROM_FAVS = 'The album was deleted from favorites.',
   ARTIST_WAS_ADDED_TO_FAVS = 'The artist was added to favorites.',
   ARTIST_WAS_DELETED_FROM_FAVS = 'The artist was deleted from favorites.',
+  USER_WAS_REGISTERED = 'The user was registered successfully.',
 }
 
 export const LOGS_FOLDER_NAME = 'logs';

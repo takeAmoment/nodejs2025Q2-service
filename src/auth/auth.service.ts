@@ -5,20 +5,26 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+
 import { PrismaService } from 'src/prismaService/prismaService.service';
 import { SignupUserDto } from './dto/signupUser.dto';
 import {
+  ErorrMessagesEnum,
   JWT_ACCESS_EXPIRATION_TIME,
   JWT_ACCESS_SECRET,
   JWT_REFRESH_EXPIRATION_TIME,
   JWT_REFRESH_SECRET,
+  MessagesEnum,
   SALT_ROUNDS,
 } from 'src/constants';
 import { UserService } from 'src/user/user.service';
-import { LoginResponse, MessageResponse } from './auth.interfaces';
-import { JwtService } from '@nestjs/jwt';
+import {
+  LoginResponse,
+  MessageResponse,
+  RefreshTokenBody,
+} from './auth.interfaces';
 import { LoginUserDto } from './dto/loginUser.dto';
-import { RefreshTokenDto } from './dto/refreshToken.dto';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +41,7 @@ export class AuthService {
       where: { login },
     });
 
-    if (existingUser) throw new ConflictException('Such user already exists.');
+    if (existingUser) throw new ConflictException(ErorrMessagesEnum.USER_EXIST);
 
     const hashedPassword = await bcrypt.hash(
       password,
@@ -44,7 +50,7 @@ export class AuthService {
 
     await this.userService.create({ login, password: hashedPassword });
 
-    return { message: 'User was registered.' };
+    return { message: MessagesEnum.USER_WAS_REGISTERED };
   }
 
   async generateTokens(payload: { sub: string; login: string }) {
@@ -74,13 +80,13 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new ForbiddenException('User with such login does not exist.');
+      throw new ForbiddenException(ErorrMessagesEnum.WRONG_LOGIN);
     }
 
     const isPasswordsMatch = await bcrypt.compare(password, user.password);
 
     if (!isPasswordsMatch) {
-      throw new ForbiddenException('Password is wrong.');
+      throw new ForbiddenException(ErorrMessagesEnum.WRONG_PASSWORD);
     }
 
     const payload = { sub: user.id, login: user.login };
@@ -88,7 +94,7 @@ export class AuthService {
     return this.generateTokens(payload);
   }
 
-  async refresh(dto: RefreshTokenDto) {
+  async refresh(dto: RefreshTokenBody) {
     const { refreshToken } = dto;
 
     try {
@@ -100,7 +106,7 @@ export class AuthService {
         where: { id: payload.sub },
       });
 
-      if (!user) throw new Error('Refresh token is invalid.');
+      if (!user) throw new Error(ErorrMessagesEnum.INVALID_REFRESH_TOKEN);
 
       const updatedPayload = { sub: user.id, login: user.login };
 
