@@ -32,7 +32,7 @@ export class LoggingService implements LoggerService {
 
   constructor() {
     this.logLevel = process.env.LOG_LEVEL || LogLevelsEnum.WARN;
-    this.maxFileSize = parseInt(process.env.LOG_FILE_ROTATION || '380');
+    this.maxFileSize = parseInt(process.env.LOG_FILE_ROTATION || '100');
     this.createLogFolder();
   }
 
@@ -117,7 +117,7 @@ export class LoggingService implements LoggerService {
     }
   }
 
-  async log(message: any, context: string) {
+  async log(message: string, context: string) {
     if (this.shouldLog(LogLevelsEnum.LOG)) {
       await this.rotateFile();
       await this.writeFile(LogLevelsEnum.LOG, message, context);
@@ -125,7 +125,7 @@ export class LoggingService implements LoggerService {
     }
   }
 
-  async warn(message: any, context: string) {
+  async warn(message: string, context: string) {
     if (this.shouldLog(LogLevelsEnum.WARN)) {
       await this.rotateFile();
       await this.writeFile(LogLevelsEnum.WARN, message, context);
@@ -133,7 +133,7 @@ export class LoggingService implements LoggerService {
     }
   }
 
-  async error(message: any, trace?: string, context?: string) {
+  async error(message: string, trace?: string, context?: string) {
     if (this.shouldLog(LogLevelsEnum.ERROR)) {
       await this.rotateFile();
       await this.writeFile(LogLevelsEnum.ERROR, message, context, trace);
@@ -141,7 +141,7 @@ export class LoggingService implements LoggerService {
     }
   }
 
-  async verbose(message: any, context: string) {
+  async verbose(message: string, context: string) {
     if (this.shouldLog(LogLevelsEnum.VERBOSE)) {
       await this.rotateFile();
       await this.writeFile(LogLevelsEnum.VERBOSE, message, context);
@@ -149,11 +149,19 @@ export class LoggingService implements LoggerService {
     }
   }
 
-  async debug(message: any, context: string) {
+  async debug(message: string, context: string) {
     if (this.shouldLog(LogLevelsEnum.DEBUG)) {
       await this.rotateFile();
       await this.writeFile(LogLevelsEnum.DEBUG, message, context);
       this.consoleLogger.debug(message, context);
+    }
+  }
+
+  async fatal(message: string, context: string) {
+    if (this.shouldLog(LogLevelsEnum.FATAL)) {
+      await this.rotateFile();
+      await this.writeFile(LogLevelsEnum.FATAL, message, context);
+      this.consoleLogger.fatal(message, context);
     }
   }
 }
