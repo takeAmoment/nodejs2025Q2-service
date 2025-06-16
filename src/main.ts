@@ -22,13 +22,6 @@ async function bootstrap() {
   app.useGlobalFilters(new AppExceptionFilter(logger));
   const jwtService = app.get(JwtService);
   app.useGlobalGuards(new AuthGuard(jwtService));
-  //for tests
-  // setTimeout(() => {
-  //   throw new Error('This is an uncaught exception');
-  // }, 1000);
-  // setTimeout(() => {
-  //   Promise.reject(new Error('This is an unhandled rejection'));
-  // }, 1000);
 
   process.on('uncaughtException', (err) => {
     logger.error(`Uncaught Exception: ${err.message}`, err.stack);
