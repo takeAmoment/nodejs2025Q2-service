@@ -40,6 +40,7 @@ export enum MessagesEnum {
 
 export const LOGS_FOLDER_NAME = 'logs';
 export const LOGS_FOLDER_FILE_NAME = 'app.log';
+export const ERROR_LOGS_FILE = 'error.log';
 
 export enum LogLevelsEnum {
   VERBOSE = 'verbose',

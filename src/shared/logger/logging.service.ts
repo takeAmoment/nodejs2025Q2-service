@@ -11,6 +11,7 @@ import {
 } from 'node:fs/promises';
 import {
   BYTES_IN_KB,
+  ERROR_LOGS_FILE,
   LOG_LEVELS,
   LogLevel,
   LogLevelsEnum,
@@ -24,6 +25,11 @@ export class LoggingService implements LoggerService {
     process.cwd(),
     LOGS_FOLDER_NAME,
     LOGS_FOLDER_FILE_NAME,
+  );
+  private readonly errorFilePath = join(
+    process.cwd(),
+    LOGS_FOLDER_NAME,
+    ERROR_LOGS_FILE,
   );
   private readonly logLevel: string;
   private readonly maxFileSize: number;
@@ -43,21 +49,19 @@ export class LoggingService implements LoggerService {
     );
   }
 
-  private async rotateFile() {
+  private async rotateFile(isError?: boolean) {
     if (this.isRotating) return;
 
     try {
       this.isRotating = true;
-      const statInfo = await stat(this.logFilePath);
+      const filePath = isError ? this.errorFilePath : this.logFilePath;
+      const statInfo = await stat(filePath);
 
       if (statInfo.size / BYTES_IN_KB > this.maxFileSize) {
-        const rotatedName = this.logFilePath.replace(
-          '.log',
-          `-${Date.now()}.log`,
-        );
+        const rotatedName = filePath.replace('.log', `-${Date.now()}.log`);
 
-        await rename(this.logFilePath, rotatedName);
-        await writeFile(this.logFilePath, '');
+        await rename(filePath, rotatedName);
+        await writeFile(filePath, '');
       }
     } catch (error) {
       throw new Error(error.message);
@@ -100,6 +104,10 @@ export class LoggingService implements LoggerService {
         throw new Error(error.message);
       }
     }
+
+    if (!(await this.checkIsExist(this.errorFilePath))) {
+      await writeFile(this.errorFilePath, '');
+    }
   }
 
   async writeFile(
@@ -112,6 +120,12 @@ export class LoggingService implements LoggerService {
     const logMessage = `[${time}] [${logLevel.toLocaleUpperCase()}] ${context ? `[${context}]` : ''} ${message} ${trace ? `\nTRACE: ${trace}` : ''}\n`;
     try {
       await appendFile(this.logFilePath, logMessage, 'utf-8');
+      if (
+        logLevel === LogLevelsEnum.ERROR ||
+        logLevel === LogLevelsEnum.FATAL
+      ) {
+        await appendFile(this.errorFilePath, logMessage, 'utf-8');
+      }
     } catch (error) {
       throw new Error(error.message);
     }
@@ -135,7 +149,7 @@ export class LoggingService implements LoggerService {
 
   async error(message: string, trace?: string, context?: string) {
     if (this.shouldLog(LogLevelsEnum.ERROR)) {
-      await this.rotateFile();
+      await this.rotateFile(true);
       await this.writeFile(LogLevelsEnum.ERROR, message, context, trace);
       this.consoleLogger.error(message, trace, context);
     }
