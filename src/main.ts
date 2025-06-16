@@ -6,6 +6,8 @@ import * as YAML from 'yamljs';
 import * as path from 'path';
 import { LoggingService } from './shared/logger/logging.service';
 import { AppExceptionFilter } from './shared/filters/app-exceptions.filter';
+import { AuthGuard } from './auth/auth.guard';
+import { JwtService } from '@nestjs/jwt';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
@@ -18,6 +20,8 @@ async function bootstrap() {
   app.useLogger(app.get(LoggingService));
   const logger = app.get(LoggingService);
   app.useGlobalFilters(new AppExceptionFilter(logger));
+  const jwtService = app.get(JwtService);
+  app.useGlobalGuards(new AuthGuard(jwtService));
   //for tests
   // setTimeout(() => {
   //   throw new Error('This is an uncaught exception');

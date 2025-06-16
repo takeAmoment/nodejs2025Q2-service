@@ -1,0 +1,112 @@
+import {
+  ConflictException,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { PrismaService } from 'src/prismaService/prismaService.service';
+import { SignupUserDto } from './dto/signupUser.dto';
+import {
+  JWT_ACCESS_EXPIRATION_TIME,
+  JWT_ACCESS_SECRET,
+  JWT_REFRESH_EXPIRATION_TIME,
+  JWT_REFRESH_SECRET,
+  SALT_ROUNDS,
+} from 'src/constants';
+import { UserService } from 'src/user/user.service';
+import { LoginResponse, MessageResponse } from './auth.interfaces';
+import { JwtService } from '@nestjs/jwt';
+import { LoginUserDto } from './dto/loginUser.dto';
+import { RefreshTokenDto } from './dto/refreshToken.dto';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly userService: UserService,
+    private jwtService: JwtService,
+  ) {}
+
+  async signup(dto: SignupUserDto): Promise<MessageResponse> {
+    const { login, password } = dto;
+
+    const existingUser = await this.prismaService.user.findFirst({
+      where: { login },
+    });
+
+    if (existingUser) throw new ConflictException('Such user already exists.');
+
+    const hashedPassword = await bcrypt.hash(
+      password,
+      Number(process.env.CRYPT_SALT || SALT_ROUNDS),
+    );
+
+    await this.userService.create({ login, password: hashedPassword });
+
+    return { message: 'User was registered.' };
+  }
+
+  async generateTokens(payload: { sub: string; login: string }) {
+    const accessToken = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_ACCESS_SECRET || JWT_ACCESS_SECRET,
+      expiresIn: process.env.TOKEN_EXPIRE_TIME || JWT_ACCESS_EXPIRATION_TIME,
+    });
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET_REFRESH_KEY || JWT_REFRESH_SECRET,
+      expiresIn:
+        process.env.TOKEN_REFRESH_EXPIRE_TIME || JWT_REFRESH_EXPIRATION_TIME,
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async login(dto: LoginUserDto): Promise<LoginResponse> {
+    const { login, password } = dto;
+
+    const user = await this.prismaService.user.findFirst({
+      where: { login },
+      select: { id: true, password: true, login: true },
+    });
+
+    if (!user) {
+      throw new ForbiddenException('User with such login does not exist.');
+    }
+
+    const isPasswordsMatch = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordsMatch) {
+      throw new ForbiddenException('Password is wrong.');
+    }
+
+    const payload = { sub: user.id, login: user.login };
+
+    return this.generateTokens(payload);
+  }
+
+  async refresh(dto: RefreshTokenDto) {
+    const { refreshToken } = dto;
+
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_SECRET_REFRESH_KEY || JWT_REFRESH_SECRET,
+      });
+
+      const user = await this.prismaService.user.findUnique({
+        where: { id: payload.sub },
+      });
+
+      if (!user) throw new Error('Refresh token is invalid.');
+
+      const updatedPayload = { sub: user.id, login: user.login };
+
+      return this.generateTokens(updatedPayload);
+    } catch (error) {
+      throw new UnauthorizedException('');
+    }
+  }
+}

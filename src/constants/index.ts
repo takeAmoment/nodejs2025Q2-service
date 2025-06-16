@@ -57,3 +57,17 @@ export const BYTES_IN_KB = 1024;
 // used to highlight request & response logs
 export const REQUEST_COLOR = '\x1b[34m';
 export const RESPONSE_COLOR = '\x1b[35m';
+
+export const SALT_ROUNDS = 10;
+export const JWT_ACCESS_SECRET = 'secret';
+export const JWT_REFRESH_SECRET = 'secret';
+export const JWT_ACCESS_EXPIRATION_TIME = '5m';
+export const JWT_REFRESH_EXPIRATION_TIME = '24h';
+
+export const PUBLIC_ROUTES = [
+  '/auth/signup',
+  '/auth/login',
+  '/auth/refresh',
+  '/doc',
+  '/',
+];
