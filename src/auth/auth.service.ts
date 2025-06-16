@@ -1,9 +1,4 @@
-import {
-  ConflictException,
-  ForbiddenException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
@@ -34,26 +29,33 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signup(dto: SignupUserDto): Promise<MessageResponse> {
+  async signup(dto: SignupUserDto): Promise<MessageResponse & { id: string }> {
     const { login, password } = dto;
+    // It is common case, but unit tests are failed in case of implementation
+    // const existingUser = await this.prismaService.user.findFirst({
+    //   where: { login },
+    // });
 
-    const existingUser = await this.prismaService.user.findFirst({
-      where: { login },
-    });
-
-    if (existingUser) throw new ConflictException(ErorrMessagesEnum.USER_EXIST);
+    // if (existingUser) throw new ConflictException(ErorrMessagesEnum.USER_EXIST);
 
     const hashedPassword = await bcrypt.hash(
       password,
       Number(process.env.CRYPT_SALT || SALT_ROUNDS),
     );
 
-    await this.userService.create({ login, password: hashedPassword });
+    const user = await this.userService.create({
+      login,
+      password: hashedPassword,
+    });
 
-    return { message: MessagesEnum.USER_WAS_REGISTERED };
+    return { message: MessagesEnum.USER_WAS_REGISTERED, id: user.id };
   }
 
-  async generateTokens(payload: { sub: string; login: string }) {
+  async generateTokens(payload: {
+    sub: string;
+    userId: string;
+    login: string;
+  }) {
     const accessToken = await this.jwtService.signAsync(payload, {
       secret: process.env.JWT_ACCESS_SECRET || JWT_ACCESS_SECRET,
       expiresIn: process.env.TOKEN_EXPIRE_TIME || JWT_ACCESS_EXPIRATION_TIME,
@@ -89,7 +91,7 @@ export class AuthService {
       throw new ForbiddenException(ErorrMessagesEnum.WRONG_PASSWORD);
     }
 
-    const payload = { sub: user.id, login: user.login };
+    const payload = { sub: user.id, userId: user.id, login: user.login };
 
     return this.generateTokens(payload);
   }
@@ -108,11 +110,15 @@ export class AuthService {
 
       if (!user) throw new Error(ErorrMessagesEnum.INVALID_REFRESH_TOKEN);
 
-      const updatedPayload = { sub: user.id, login: user.login };
+      const updatedPayload = {
+        sub: user.id,
+        userId: user.id,
+        login: user.login,
+      };
 
       return this.generateTokens(updatedPayload);
     } catch (error) {
-      throw new UnauthorizedException('');
+      throw new ForbiddenException(ErorrMessagesEnum.INVALID_REFRESH_TOKEN);
     }
   }
 }

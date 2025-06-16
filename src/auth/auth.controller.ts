@@ -1,4 +1,11 @@
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UnauthorizedException,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { SignupUserDto } from './dto/signupUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
@@ -14,11 +21,13 @@ export class AuthController {
     return this.authService.signup(dto);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post(RoutingPathsEnum.LOGIN)
   loginUser(@Body() dto: LoginUserDto) {
     return this.authService.login(dto);
   }
 
+  @HttpCode(HttpStatus.OK)
   @Post(RoutingPathsEnum.REFRESH)
   refreshToken(@Body() body: RefreshTokenBody) {
     const token = body?.refreshToken;

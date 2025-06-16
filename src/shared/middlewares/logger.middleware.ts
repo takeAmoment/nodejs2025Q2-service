@@ -8,11 +8,11 @@ export class LoggerMiddleware implements NestMiddleware {
   constructor(private readonly logger: LoggingService) {}
 
   use(req: Request, res: Response, next: NextFunction) {
-    const { method, url, query, body } = req;
+    const { method, query, body, originalUrl } = req;
     const start = Date.now();
 
     this.logger.log(
-      `${REQUEST_COLOR}Request: ${method} ${url} | Query params: ${JSON.stringify(query)} | Body: ${JSON.stringify(body)}`,
+      `${REQUEST_COLOR}Request: ${method} ${originalUrl} | Query params: ${JSON.stringify(query)} | Body: ${JSON.stringify(body)}`,
       '',
     );
 

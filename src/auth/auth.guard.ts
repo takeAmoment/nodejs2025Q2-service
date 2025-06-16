@@ -15,7 +15,6 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const path = request.path;
-    console.log(path);
 
     if (PUBLIC_ROUTES.includes(path)) {
       return true;

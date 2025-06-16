@@ -15,7 +15,7 @@ export enum ErorrMessagesEnum {
   USER_EXISTS = 'Such user already exists.',
   WRONG_OLD_PASSWORD = 'The old password is incorrect.',
   INCORECT_UUDI_FORMAT = 'Invalid UUDI format.',
-  USER_EXIST = 'User with with login already exists.',
+  USER_EXIST = 'User with such login already exists.',
   TRACK_NOT_FOUND = 'Such track does not exist.',
   ARTIST_NOT_EXIST = 'Such artist does not exist.',
   ALBUM_NOT_EXIST = 'Such album does not exist.',
