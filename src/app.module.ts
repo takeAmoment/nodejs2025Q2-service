@@ -12,6 +12,7 @@ import { PrismaModule } from 'src/prismaService/prismaService.module';
 import { LoggerMiddleware } from './shared/middlewares/logger.middleware';
 import { LoggingService } from './shared/logger/logging.service';
 import { AppExceptionFilter } from './shared/filters/app-exceptions.filter';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { AppExceptionFilter } from './shared/filters/app-exceptions.filter';
     FavoritesModule,
     AlbumModule,
     PrismaModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
