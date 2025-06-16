@@ -17,17 +17,42 @@ git clone {repository URL}
 npm install
 ```
 
-## Running application
+## How to run application in container (Docker)
 
-Please create .env file using .env.example
+1. Create your own .env based on .env.example
 
 ```
-npm start
+cp .env.example .env
+```
+
+2. In case of any errors, or simply as a precaution, please clean up all Docker images and resources using the following commands:
+
+```
+docker system prune -a
+docker images prune -a
+```
+
+3. Run docker compose command
+
+```
+docker compose up -d
 ```
 
 After starting the app on port (4000 as default) you can open
 in your browser OpenAPI documentation by typing http://localhost:4000/doc/.
 For more information about OpenAPI/Swagger please visit https://swagger.io/.
+
+* You can check vulnerabilities with next command:
+
+```
+IMAGE_NAME=<image-name> npm run scan
+```
+
+* You can find published image
+
+```
+docker pull alekspekhota/homelib:v1
+```
 
 ## Testing
 
@@ -72,29 +97,3 @@ npm run format
 Press <kbd>F5</kbd> to debug.
 
 For more information, visit: https://code.visualstudio.com/docs/editor/debugging
-
-## How to run application in contaiber (Docker)
-
-1. Create your own .env based on .env.example
-
-```
-cp .env.example .env
-```
-
-2. Run docker compose command
-
-```
-docker compose up -d
-```
-
-* You can check vulnerabilities with next command:
-
-```
-IMAGE_NAME=<image-name> npm run scan
-```
-
-* You can find published image
-
-```
-docker pull alekspekhota/homelib:v1
-```

@@ -4,19 +4,28 @@ export enum RoutingPathsEnum {
   ARTIST = 'artist',
   ALBUM = 'album',
   FAVS = 'favs',
+  AUTH = 'auth',
+  SIGNUP = 'signup',
+  LOGIN = 'login',
+  REFRESH = 'refresh',
 }
 
 export enum ErorrMessagesEnum {
   USER_NOT_FOUND = 'Such user does not exist.',
+  USER_EXISTS = 'Such user already exists.',
   WRONG_OLD_PASSWORD = 'The old password is incorrect.',
   INCORECT_UUDI_FORMAT = 'Invalid UUDI format.',
-  USER_EXIST = 'User with with login already exists.',
+  USER_EXIST = 'User with such login already exists.',
   TRACK_NOT_FOUND = 'Such track does not exist.',
   ARTIST_NOT_EXIST = 'Such artist does not exist.',
   ALBUM_NOT_EXIST = 'Such album does not exist.',
   ALBUM_NOT_IN_FAVS = 'This album is not in favorites.',
   ARTIST_NOT_IN_FAVS = 'This artist is not in favorites.',
   TRACK_NOT_IN_FAVS = 'This track is not in favorites.',
+  INTERNAL_SERVER_ERROR = 'Internal Server Error.',
+  INVALID_REFRESH_TOKEN = 'Missing or invalid refresh token.',
+  WRONG_LOGIN = 'The user with such login does not exist.',
+  WRONG_PASSWORD = 'The password is incorrect. Please check the password.',
 }
 
 export enum MessagesEnum {
@@ -26,4 +35,49 @@ export enum MessagesEnum {
   ALBUM_WAS_DELTED_FROM_FAVS = 'The album was deleted from favorites.',
   ARTIST_WAS_ADDED_TO_FAVS = 'The artist was added to favorites.',
   ARTIST_WAS_DELETED_FROM_FAVS = 'The artist was deleted from favorites.',
+  USER_WAS_REGISTERED = 'The user was registered successfully.',
 }
+
+export const LOGS_FOLDER_NAME = 'logs';
+export const LOGS_FOLDER_FILE_NAME = 'app.log';
+export const ERROR_LOGS_FILE = 'error.log';
+
+export enum LogLevelsEnum {
+  VERBOSE = 'verbose',
+  DEBUG = 'debug',
+  LOG = 'log',
+  WARN = 'warn',
+  ERROR = 'error',
+  FATAL = 'fatal',
+}
+// according to severity
+export const LOG_LEVELS = [
+  LogLevelsEnum.VERBOSE,
+  LogLevelsEnum.DEBUG,
+  LogLevelsEnum.LOG,
+  LogLevelsEnum.WARN,
+  LogLevelsEnum.ERROR,
+  LogLevelsEnum.FATAL,
+] as const;
+
+export type LogLevel = (typeof LOG_LEVELS)[number];
+
+export const BYTES_IN_KB = 1024;
+
+// used to highlight request & response logs
+export const REQUEST_COLOR = '\x1b[34m';
+export const RESPONSE_COLOR = '\x1b[35m';
+
+export const SALT_ROUNDS = 10;
+export const JWT_ACCESS_SECRET = 'secret';
+export const JWT_REFRESH_SECRET = 'secret';
+export const JWT_ACCESS_EXPIRATION_TIME = '5m';
+export const JWT_REFRESH_EXPIRATION_TIME = '24h';
+
+export const PUBLIC_ROUTES = [
+  '/auth/signup',
+  '/auth/login',
+  '/auth/refresh',
+  '/doc',
+  '/',
+];
